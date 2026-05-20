@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG 09 &mdash; Reranker Mathematics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-card: #0d1117;
+            --bg-code: #161b22;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent: #76B900;
+            --accent-dim: #76B90044;
+            --accent-glow: #76B90033;
+            --border: #21262d;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --font-body: 'Inter', sans-serif;
+            --max-width: 900px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg-primary); color: var(--text-primary);
+               font-family: var(--font-body); font-size: 17px; line-height: 1.7;
+               overflow-x: hidden; }
+        .hero { min-height: 100vh; display: flex; flex-direction: column;
+                justify-content: center; align-items: center;
+                padding: 2rem 1.5rem; text-align: center; position: relative; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 50%;
+                        transform: translateX(-50%); width: 600px; height: 600px;
+                        background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+                        pointer-events: none; z-index: 0; }
+        .hero > * { position: relative; z-index: 1; }
+        .series-label { font-family: var(--font-mono); font-size: 0.85rem;
+                        color: var(--accent); letter-spacing: 0.15em;
+                        text-transform: uppercase; margin-bottom: 1rem; }
+        .hero h1 { font-family: var(--font-display);
+                   font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 700;
+                   color: var(--text-primary); line-height: 1.2; margin-bottom: 1rem; }
+        .hero h1 .accent { color: var(--accent); }
+        .hero .subtitle { font-size: 1.1rem; color: var(--text-secondary);
+                          max-width: 720px; margin-bottom: 2rem; }
+        .tags { display: flex; flex-wrap: wrap; gap: 0.5rem;
+                justify-content: center; margin-bottom: 2.5rem; }
+        .tag { font-family: var(--font-mono); font-size: 0.75rem;
+               padding: 0.25rem 0.75rem; border-radius: 999px;
+               border: 1px solid var(--accent); color: var(--accent);
+               background: var(--accent-dim); white-space: nowrap; }
+        .pipeline { display: flex; flex-wrap: wrap; align-items: center;
+                    justify-content: center; gap: 0.25rem;
+                    margin-bottom: 1rem; max-width: var(--max-width); }
+        .pipeline-step { font-family: var(--font-mono); font-size: 0.7rem;
+                         padding: 0.3rem 0.7rem; background: var(--bg-card);
+                         border: 1px solid var(--border); border-radius: 4px;
+                         color: var(--text-secondary); white-space: nowrap; }
+        .pipeline-arrow { color: var(--accent); font-size: 0.9rem; font-weight: 700; }
+        .slide { min-height: 100vh; max-width: var(--max-width); margin: 0 auto;
+                 padding: 4rem 1.5rem; position: relative;
+                 display: flex; flex-direction: column; justify-content: center; }
+        .slide-number { font-family: var(--font-display); font-size: 5rem;
+                        font-weight: 700; color: var(--accent-dim);
+                        position: absolute; top: 2rem; right: 1.5rem;
+                        line-height: 1; user-select: none; }
+        .slide h2 { font-family: var(--font-display); font-size: 1.9rem;
+                    font-weight: 700; color: var(--accent);
+                    margin-bottom: 1.5rem; line-height: 1.25; }
+        .slide h3 { font-family: var(--font-display); font-size: 1.3rem;
+                    font-weight: 600; color: var(--text-primary);
+                    margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .slide p { margin-bottom: 1rem; color: var(--text-secondary); }
+        .slide p strong { color: var(--text-primary); }
+        .slide ul, .slide ol { margin-bottom: 1rem; padding-left: 1.5rem; color: var(--text-secondary); }
+        .slide li { margin-bottom: 0.4rem; }
+        .slide li strong { color: var(--text-primary); }
+        .slide code { font-family: var(--font-mono); font-size: 0.88em;
+                      background: var(--bg-code); border: 1px solid var(--border);
+                      padding: 0.05rem 0.35rem; border-radius: 3px; color: #c9d1d9; }
+        .math { font-family: var(--font-mono); font-size: 0.95em;
+                background: var(--bg-code); border: 1px solid var(--border);
+                padding: 0.6rem 0.9rem; border-radius: 6px; color: #c9d1d9;
+                display: block; margin: 0.6rem 0; line-height: 1.7;
+                overflow-x: auto; white-space: nowrap; }
+        .math .acc { color: var(--accent); }
+        .math .dim { color: var(--text-secondary); }
+        .math .red { color: #ff7b72; }
+        .code-block { background: var(--bg-code); border: 1px solid var(--border);
+                      border-radius: 8px; margin: 1.25rem 0; overflow: hidden; }
+        .code-header { font-family: var(--font-mono); font-size: 0.75rem;
+                       color: var(--accent); background: rgba(118, 185, 0, 0.08);
+                       padding: 0.4rem 1rem; border-bottom: 1px solid var(--border); }
+        .code-block pre { margin: 0; padding: 1rem; overflow-x: auto; }
+        .code-block code { font-family: var(--font-mono); font-size: 0.85rem;
+                           line-height: 1.6; color: #c9d1d9;
+                           background: transparent; border: none; padding: 0; }
+        .kw { color: #ff7b72; }
+        .fn { color: #d2a8ff; }
+        .str { color: #a5d6ff; }
+        .cm { color: #8b949e; font-style: italic; }
+        .num { color: #79c0ff; }
+        .type { color: #ffa657; }
+        .table-wrap { overflow-x: auto; margin: 1.25rem 0;
+                      border-radius: 8px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { background: var(--bg-code); color: var(--accent);
+             font-weight: 600; text-align: left;
+             padding: 0.75rem 1rem; border-bottom: 1px solid var(--border);
+             font-family: var(--font-display); white-space: nowrap; }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border);
+             color: var(--text-secondary); vertical-align: top; }
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) td { background: rgba(13, 17, 23, 0.5); }
+        .diagram-flow { display: flex; flex-wrap: wrap; align-items: center;
+                        justify-content: center; gap: 0.5rem; margin: 1.5rem 0;
+                        padding: 1.5rem; background: var(--bg-card);
+                        border: 1px solid var(--border); border-radius: 8px; }
+        .diagram-box { font-family: var(--font-mono); font-size: 0.85rem;
+                       padding: 0.5rem 1rem; background: var(--bg-code);
+                       border: 1px solid var(--border); border-radius: 6px;
+                       color: var(--text-primary); text-align: center;
+                       white-space: nowrap; }
+        .diagram-box.accent { border-color: var(--accent); color: var(--accent);
+                              background: rgba(118, 185, 0, 0.08); }
+        .diagram-arrow { color: var(--accent); font-size: 1.3rem; font-weight: 700; }
+        .diagram-grid { display: grid; gap: 0.75rem; margin: 1.5rem 0;
+                        padding: 1.5rem; background: var(--bg-card);
+                        border: 1px solid var(--border); border-radius: 8px; }
+        .diagram-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+        .diagram-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .diagram-panel { padding: 1rem; background: var(--bg-code);
+                         border: 1px solid var(--border); border-radius: 6px; }
+        .diagram-panel.accent-border { border-left: 3px solid var(--accent); }
+        .diagram-panel h4 { font-family: var(--font-display); font-size: 1rem;
+                            color: var(--accent); margin-bottom: 0.5rem; }
+        .diagram-panel p, .diagram-panel ul { font-size: 0.85rem; }
+        .callout { background: var(--bg-card); border-left: 3px solid var(--accent);
+                   border-radius: 0 8px 8px 0; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+        .callout p { margin-bottom: 0; }
+        .callout p + p { margin-top: 0.5rem; }
+        .callout .callout-label { font-family: var(--font-mono); font-size: 0.75rem;
+                                  color: var(--accent); text-transform: uppercase;
+                                  letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+        .contents-list { list-style: none; padding-left: 0; counter-reset: contents; }
+        .contents-list li { counter-increment: contents; padding: 0.6rem 0;
+                            border-bottom: 1px solid var(--border);
+                            display: flex; align-items: center; gap: 1rem; }
+        .contents-list li:last-child { border-bottom: none; }
+        .contents-list li::before { content: counter(contents, decimal-leading-zero);
+                                    font-family: var(--font-mono); font-size: 0.85rem;
+                                    color: var(--accent); min-width: 2rem; }
+        .contents-list a { color: var(--text-primary); text-decoration: none; transition: color 0.2s; }
+        .contents-list a:hover { color: var(--accent); }
+        .footer { text-align: center; padding: 3rem 1.5rem;
+                  color: var(--text-secondary); font-size: 0.85rem;
+                  border-top: 1px solid var(--border);
+                  max-width: var(--max-width); margin: 0 auto; }
+        .footer a { color: var(--accent); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        @media (max-width: 640px) {
+            .slide { padding: 3rem 1rem; min-height: auto; }
+            .slide-number { font-size: 3rem; top: 1.5rem; right: 1rem; }
+            .slide h2 { font-size: 1.5rem; }
+            .diagram-grid.cols-2, .diagram-grid.cols-3 { grid-template-columns: 1fr; }
+            .pipeline { gap: 0.15rem; }
+            .pipeline-step { font-size: 0.6rem; padding: 0.2rem 0.4rem; }
+            .hero h1 { font-size: 1.8rem; }
+            table { font-size: 0.78rem; }
+            .math { font-size: 0.78em; white-space: pre-wrap; }
+        }
+    </style>
+</head>
+<body>
+<header class="hero">
+    <div class="series-label">RAG &amp; Retrieval Systems Series &mdash; Presentation 09</div>
+    <h1>Reranker <span class="accent">Mathematics</span></h1>
+    <p class="subtitle">Inside stage 2. Cross-encoder attention, ColBERT MaxSim, the learning-to-rank loss family (pointwise, RankNet, LambdaRank / LambdaMART), InfoNCE for first-stage training, MarginMSE distillation, and the formal derivations of DCG / NDCG / MRR / MAP.</p>
+    <div class="tags">
+        <span class="tag">Cross-Encoder</span>
+        <span class="tag">ColBERT MaxSim</span>
+        <span class="tag">RankNet</span>
+        <span class="tag">LambdaRank</span>
+        <span class="tag">LambdaMART</span>
+        <span class="tag">InfoNCE</span>
+        <span class="tag">MarginMSE</span>
+        <span class="tag">NDCG</span>
+    </div>
+    <div class="pipeline">
+        <span class="pipeline-step">Top-k candidates</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Score s(q,d)</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Loss on labelled pairs</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Gradient &middot; |&Delta;NDCG|</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Trained reranker</span>
+    </div>
+</header>
+
+<section class="slide" id="slide-00">
+    <div class="slide-number">00</div>
+    <h2>Topics We'll Cover</h2>
+    <ul class="contents-list">
+        <li><a href="#slide-01">Stage 2, Formally &mdash; What a Reranker Is</a></li>
+        <li><a href="#slide-02">Cross-Encoder Architecture &mdash; Where Tokens Meet</a></li>
+        <li><a href="#slide-03">ColBERT &mdash; Late Interaction and MaxSim</a></li>
+        <li><a href="#slide-04">Learning-to-Rank &mdash; The Three Families</a></li>
+        <li><a href="#slide-05">RankNet &mdash; The Pairwise Workhorse</a></li>
+        <li><a href="#slide-06">LambdaRank &amp; LambdaMART &mdash; Optimising the Metric</a></li>
+        <li><a href="#slide-07">InfoNCE &mdash; Training the First-Stage Bi-Encoder</a></li>
+        <li><a href="#slide-08">MarginMSE &mdash; Distilling a Cross-Encoder into a Bi-Encoder</a></li>
+        <li><a href="#slide-09">Evaluation &mdash; DCG, NDCG, MRR, MAP</a></li>
+        <li><a href="#slide-10">The Full Training Pipeline</a></li>
+        <li><a href="#slide-11">What to Take Away</a></li>
+    </ul>
+    <div class="callout">
+        <div class="callout-label">Companion decks</div>
+        <p>The two-stage cascade itself &mdash; bi-encoder/cross-encoder asymmetry, indexability, ANN math, fusion derivations, latency &amp; calibration &mdash; lives in <a href="https://brendanjameslynskey.github.io/RAG_08_Two_Step_Retrieval_Architecture/">RAG 08 &mdash; Two-Step Retrieval Architecture</a>. The operator-facing overview with model tables, code snippets, and latency budgets is <a href="https://brendanjameslynskey.github.io/RAG_03_Hybrid_Search_and_Reranking/">RAG 03 &mdash; Hybrid Search &amp; Reranking</a>.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-01">
+    <div class="slide-number">01</div>
+    <h2>Stage 2, Formally &mdash; What a Reranker Is</h2>
+    <p>Given a query <em>q</em> and a short-list <code>D<sub>1</sub> = {d<sub>1</sub>, &hellip;, d<sub>k<sub>1</sub></sub>}</code> from the first-stage retriever, a reranker is a function</p>
+    <span class="math">s<sub>&theta;</sub>: (Q &times; D) &rarr; &reals;<span class="dim">    parameters &theta;</span></span>
+    <p>that assigns a real-valued score to each <em>(q, d)</em> pair. The pipeline's stage-2 output is the top-<em>k<sub>2</sub></em> documents ordered by score:</p>
+    <span class="math">D<sub>2</sub> = argsort<sub>d &isin; D<sub>1</sub></sub><sup>&darr;</sup> s<sub>&theta;</sub>(q, d) &nbsp; [: k<sub>2</sub>]</span>
+    <p>Two implementation families dominate:</p>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>Cross-encoder</h4>
+            <p><code>s<sub>&theta;</sub>(q,d) = h<sub>head</sub>( BERT<sub>&theta;</sub>([CLS] q [SEP] d) )</code></p>
+            <p>One full transformer forward pass per (q,d) pair. Maximum quality, maximum cost.</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>Late-interaction (ColBERT family)</h4>
+            <p><code>s<sub>&theta;</sub>(q,d) = &Sigma;<sub>i</sub> max<sub>j</sub> &lang; E<sub>q<sub>i</sub></sub>, E<sub>d<sub>j</sub></sub> &rang;</code></p>
+            <p>Per-token embeddings stored; scoring is a MaxSim reduction. Lower cost; precision close to a cross-encoder on most benchmarks.</p>
+        </div>
+    </div>
+    <p>This deck derives both, the loss functions that train them, the contrastive loss that trains the bi-encoder feeding stage 1, the distillation trick that lets the bi-encoder inherit the cross-encoder's quality, and the metrics that measure all of it.</p>
+</section>
+
+<section class="slide" id="slide-02">
+    <div class="slide-number">02</div>
+    <h2>Cross-Encoder Architecture &mdash; Where Tokens Meet</h2>
+    <p>A cross-encoder is the same transformer block you already know, applied to a concatenated input. The mathematics is unremarkable; the consequence is enormous.</p>
+    <h3>The input and the scoring head</h3>
+    <span class="math">x = [CLS] q<sub>1</sub> q<sub>2</sub> &hellip; q<sub>|q|</sub> [SEP] d<sub>1</sub> d<sub>2</sub> &hellip; d<sub>|d|</sub> [SEP]</span>
+    <span class="math">H<sup>(L)</sup> = TransformerStack<sub>&theta;</sub>(EmbedTokens(x))<span class="dim">    H<sup>(L)</sup> &isin; &reals;<sup>(|x|+3) &times; D</sup></span></span>
+    <span class="math">s<sub>&theta;</sub>(q,d) = <span class="acc">w<sup>T</sup></span> H<sup>(L)</sup><sub>CLS</sub> + b<span class="dim">    scalar score from [CLS] embedding</span></span>
+    <h3>The reason it works: every-token-attends-to-every-token</h3>
+    <p>Inside each layer, self-attention computes</p>
+    <span class="math">Attn(H) = softmax( <span class="acc">Q K<sup>T</sup></span> / &radic;d ) V<span class="dim">    Q, K, V = HW<sub>Q</sub>, HW<sub>K</sub>, HW<sub>V</sub></span></span>
+    <p>where Q, K, V mix <em>all</em> rows of H &mdash; query tokens, document tokens, and special tokens. Concretely, the <em>i</em>-th row of <code>Q K<sup>T</sup></code> contains the dot products between token <em>i</em> and every other token. If <em>i</em> is a query token and <em>j</em> is a document token, the entry <code>(QK<sup>T</sup>)<sub>i,j</sub></code> is a direct, learned, soft-aligned similarity between them. The transformer then refines this in every subsequent layer.</p>
+    <div class="callout">
+        <div class="callout-label">Token-level interactions &mdash; the bi-encoder doesn't have them</div>
+        <p>A bi-encoder pools <em>q</em> and <em>d</em> into single vectors before they ever meet. By the time the dot product happens, all token-level structure has been crushed into a global summary. A cross-encoder keeps token-level structure all the way through and scores from a <em>jointly-conditioned</em> [CLS] embedding. This is why cross-encoders win on the BEIR average by 5&ndash;10 NDCG points despite using the same backbone architecture.</p>
+    </div>
+    <h3>Cost &mdash; the price of those interactions</h3>
+    <p>Per (q, d) pair, the dominant cost is self-attention over <em>|q| + |d|</em> tokens:</p>
+    <span class="math">cost &asymp; L &middot; ((|q| + |d|)<sup>2</sup> &middot; D + (|q| + |d|) &middot; D<sup>2</sup>)<span class="dim">    L = layers, D = hidden dim</span></span>
+    <p>For a 12-layer, 768-dim model with |q|+|d|=384, that is ~1&ndash;5 ms on an A100. Multiplied by <em>k</em>=100 candidates, the budget pressure that drives every other decision in this deck.</p>
+</section>
+
+<section class="slide" id="slide-03">
+    <div class="slide-number">03</div>
+    <h2>ColBERT &mdash; Late Interaction and MaxSim</h2>
+    <p>ColBERT (Khattab &amp; Zaharia, SIGIR 2020) found a middle ground: keep <em>per-token</em> embeddings, but replace full cross-attention with a much cheaper interaction. The cost: a single, simple operator called <strong>MaxSim</strong>.</p>
+    <h3>The MaxSim score, formally</h3>
+    <p>Let <code>E<sub>q</sub> &isin; &reals;<sup>|q| &times; D</sup></code> and <code>E<sub>d</sub> &isin; &reals;<sup>|d| &times; D</sup></code> be the L2-normalised token-level embeddings produced by the same BERT-style encoder. The score is:</p>
+    <span class="math">s(q,d) = &Sigma;<sub>i=1</sub><sup>|q|</sup> max<sub>j=1</sub><sup>|d|</sup> &lang; E<sub>q<sub>i</sub></sub>, E<sub>d<sub>j</sub></sub> &rang;</span>
+    <p>Operationally: for each query token <em>i</em>, find the most similar document token <em>j</em> (over all <em>j</em>), take the similarity, and sum across query tokens.</p>
+    <div class="callout">
+        <div class="callout-label">Why this is &ldquo;late interaction&rdquo;</div>
+        <p>The query and document are <strong>encoded independently</strong> (cheap, parallelisable, document side cacheable). They only meet at the final MaxSim, which is a closed-form algebraic operation &mdash; not another neural network. A bi-encoder interacts at a single scalar (the dot product of pooled vectors). A cross-encoder interacts continuously across all <em>L</em> layers. ColBERT interacts <strong>once, per token pair, at the end</strong> &mdash; hence &ldquo;late&rdquo;.</p>
+    </div>
+    <h3>Why MaxSim approximates cross-attention well &mdash; and where it doesn't</h3>
+    <p>For each query token, MaxSim selects the single best-matching document token. This captures the most common signal in retrieval &mdash; the existence of a strong local alignment &mdash; without modelling the joint reasoning across query tokens. The empirical result: on BEIR-class corpora, ColBERTv2 (Santhanam et al., NAACL 2022) closes most of the gap between bi-encoder and cross-encoder quality at a fraction of the cost.</p>
+    <p>What it misses: <em>conjunctive</em> evidence requiring multiple query tokens to bind to coherent document regions. If a query is &ldquo;X causes Y under condition Z&rdquo;, MaxSim can match X, Y, Z to three different documents within the corpus by stitching together their best matches in different paragraphs. A cross-encoder can refuse that &mdash; its joint attention can spot that X, Y, Z need to co-occur.</p>
+    <h3>Cost &mdash; orders of magnitude cheaper at large k</h3>
+    <p>For reranking a candidate set of <em>k</em> documents:</p>
+    <ul>
+        <li><strong>Encoding:</strong> one bi-encoder pass per doc, precomputable. Query: one bi-encoder pass total (not per doc).</li>
+        <li><strong>Scoring:</strong> for each (q, d), one <code>|q| &times; |d|</code> dot-product matrix and a row-wise max&ndash;sum reduction. Trivially batched on GPU.</li>
+    </ul>
+    <p>End-to-end at <em>k</em>=200: typically 30&ndash;60 ms on a single A10, versus 150&ndash;300 ms for a comparable cross-encoder. PLAID (Santhanam et al., CIKM 2022) extends this with centroid-based pruning for first-stage use over the whole corpus, but the reranker case shown here needs none of that machinery.</p>
+</section>
+
+<section class="slide" id="slide-04">
+    <div class="slide-number">04</div>
+    <h2>Learning-to-Rank &mdash; The Three Families</h2>
+    <p>Once the scoring function <em>s<sub>&theta;</sub></em> is chosen, we have to <em>train</em> it. Learning-to-rank (LTR) is the body of methods that turns labelled <code>(query, document, relevance)</code> data into gradient signal. The classical taxonomy is three families, distinguished by what they treat as a training example.</p>
+    <div class="diagram-grid cols-3">
+        <div class="diagram-panel accent-border">
+            <h4>Pointwise</h4>
+            <p>Each (q, d) pair is one example. Predict the label (regression or classification) and minimise per-pair loss.</p>
+            <span class="math">L = &Sigma; &ell;(s<sub>&theta;</sub>(q,d), y)</span>
+            <p>Simple, but ignores the fact that we only care about the <em>relative</em> order of documents per query, not absolute scores. Used in early TREC systems; rare today.</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>Pairwise</h4>
+            <p>Each example is a pair of documents <em>(d<sup>+</sup>, d<sup>&minus;</sup>)</em> for the same query, with <em>d<sup>+</sup></em> known to be more relevant. Loss penalises the order being wrong.</p>
+            <span class="math">L = &Sigma; &ell;<sub>pair</sub>(s(q,d<sup>+</sup>), s(q,d<sup>&minus;</sup>))</span>
+            <p>The dominant family. RankNet (slide 05) and contrastive losses (slide 07) live here.</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>Listwise</h4>
+            <p>Each example is the <em>entire ranked list</em> for a query. Loss is computed over the whole list at once.</p>
+            <span class="math">L = &Sigma; &ell;<sub>list</sub>( s(q, &middot;), y(q, &middot;) )</span>
+            <p>Best aligned with metrics like NDCG, but most metrics are non-differentiable. Workaround: LambdaRank (slide 06) &mdash; pairwise gradients weighted by metric impact.</p>
+        </div>
+    </div>
+    <div class="callout">
+        <div class="callout-label">The non-differentiable metric problem</div>
+        <p>What we actually want to optimise &mdash; NDCG@10, MRR, MAP &mdash; involves <em>sort()</em> and <em>argmax</em>, neither of which is differentiable. The pointwise family ignores this and hopes per-pair regression correlates with rank quality. The listwise family confronts it head-on (smoothed surrogates, listwise softmaxes). The pairwise family in its LambdaRank/LambdaMART form found the pragmatic answer: use a pairwise gradient, then <em>weight</em> it by how much swapping the two documents would change the metric. The next two slides spell that out.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-05">
+    <div class="slide-number">05</div>
+    <h2>RankNet &mdash; The Pairwise Workhorse</h2>
+    <p>RankNet (Burges et al., ICML 2005) is the original probabilistic pairwise ranking loss. Most modern reranker training &mdash; including cross-encoder fine-tuning &mdash; is RankNet or a close cousin.</p>
+    <h3>The model</h3>
+    <p>For a query <em>q</em> and two documents <em>d<sub>i</sub>, d<sub>j</sub></em>, let <em>s<sub>i</sub> = s<sub>&theta;</sub>(q, d<sub>i</sub>)</em> and likewise <em>s<sub>j</sub></em>. RankNet posits a sigmoid model for &ldquo;<em>d<sub>i</sub></em> outranks <em>d<sub>j</sub></em>&rdquo;:</p>
+    <span class="math">P<sub>ij</sub> = Pr[ rank(d<sub>i</sub>) &lt; rank(d<sub>j</sub>) ] = &sigma;(s<sub>i</sub> &minus; s<sub>j</sub>) = 1 / (1 + e<sup>&minus;(s<sub>i</sub> &minus; s<sub>j</sub>)</sup>)</span>
+    <p>Let <code>P&#x0304;<sub>ij</sub> &isin; {0, &frac12;, 1}</code> be the target (1 if <em>d<sub>i</sub></em> is more relevant, 0 if less, &frac12; if tied). Cross-entropy loss:</p>
+    <span class="math">C<sub>ij</sub> = &minus; P&#x0304;<sub>ij</sub> log P<sub>ij</sub> &minus; (1 &minus; P&#x0304;<sub>ij</sub>) log (1 &minus; P<sub>ij</sub>)</span>
+    <p>In the typical &ldquo;<em>d<sub>i</sub></em> strictly more relevant&rdquo; case (P&#x0304;<sub>ij</sub> = 1), this collapses to:</p>
+    <span class="math">C<sub>ij</sub> = log(1 + e<sup>&minus;(s<sub>i</sub> &minus; s<sub>j</sub>)</sup>)<span class="dim">    softplus margin loss</span></span>
+    <h3>The gradient &mdash; clean and useful</h3>
+    <p>Differentiate the cross-entropy form with respect to <em>s<sub>i</sub></em>:</p>
+    <span class="math">&part;C<sub>ij</sub> / &part;s<sub>i</sub> = &sigma;(s<sub>i</sub> &minus; s<sub>j</sub>) &minus; P&#x0304;<sub>ij</sub><span class="dim">    and  &part;C<sub>ij</sub> / &part;s<sub>j</sub> = &minus;(&part;C<sub>ij</sub> / &part;s<sub>i</sub>)</span></span>
+    <p>Define</p>
+    <span class="math">&lambda;<sub>ij</sub> &equiv; &part;C<sub>ij</sub> / &part;s<sub>i</sub> = &sigma;(s<sub>i</sub> &minus; s<sub>j</sub>) &minus; P&#x0304;<sub>ij</sub></span>
+    <p>Then the total gradient on score <em>s<sub>i</sub></em> from a query's pair set is:</p>
+    <span class="math">&part;C / &part;s<sub>i</sub> = &Sigma;<sub>{j : (i,j) &isin; pairs}</sub> &lambda;<sub>ij</sub> &minus; &Sigma;<sub>{j : (j,i) &isin; pairs}</sub> &lambda;<sub>ji</sub></span>
+    <p>These <em>&lambda;</em>s are the &ldquo;lambdas&rdquo; that name LambdaRank. They are signed forces on each score: positive lambda &rArr; push score up; negative &rArr; push down.</p>
+    <div class="callout">
+        <div class="callout-label">Hard negatives matter most</div>
+        <p>From the gradient form: <code>&lambda;<sub>ij</sub> = &sigma;(s<sub>i</sub> &minus; s<sub>j</sub>) &minus; 1</code> when <em>d<sub>i</sub></em> should outrank <em>d<sub>j</sub></em>. If the model already gets it right by a wide margin (<em>s<sub>i</sub> &gg; s<sub>j</sub></em>), <em>&sigma;</em>&asymp;1 and the gradient is near zero &mdash; nothing to learn. If the model gets it wrong (<em>s<sub>i</sub> &lt; s<sub>j</sub></em>), the gradient is near &minus;1 &mdash; full force. Therefore: <strong>training is gradient-dominated by the hard pairs &mdash; the close calls and the actual mistakes.</strong> This is why hard-negative mining (pick negatives that the current model scores near the positive) is the central trick in modern reranker training.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-06">
+    <div class="slide-number">06</div>
+    <h2>LambdaRank &amp; LambdaMART &mdash; Optimising the Metric</h2>
+    <p>RankNet treats all pair-order errors as equivalent. NDCG does not. A swap of positions 1 and 2 hurts NDCG much more than a swap of positions 99 and 100. LambdaRank (Burges, Ragno &amp; Le, NIPS 2006) fixes this by <em>weighting</em> each pairwise gradient by the metric impact of swapping that pair.</p>
+    <h3>The LambdaRank gradient</h3>
+    <p>Take the RankNet lambda and multiply by the magnitude of the metric change if the two documents swapped positions in the current ranking:</p>
+    <span class="math">&lambda;<sub>ij</sub><sup>(LR)</sup> = ( &sigma;(s<sub>i</sub> &minus; s<sub>j</sub>) &minus; P&#x0304;<sub>ij</sub> ) &middot; <span class="acc">| &Delta;NDCG<sub>ij</sub> |</span></span>
+    <p>where <strong>&Delta;NDCG<sub>ij</sub></strong> is the change in NDCG if documents <em>i</em> and <em>j</em> swap rank positions (all other documents fixed). This can be computed analytically from the rank positions and the labels:</p>
+    <span class="math">&Delta;NDCG<sub>ij</sub> = (G<sub>i</sub> &minus; G<sub>j</sub>) &middot; (1/D<sub>i</sub> &minus; 1/D<sub>j</sub>) / IDCG</span>
+    <p>where <em>G<sub>i</sub> = 2<sup>rel<sub>i</sub></sup> &minus; 1</em> (gain) and <em>D<sub>i</sub> = log<sub>2</sub>(rank<sub>i</sub> + 1)</em> (discount) &mdash; see slide 09 for the full DCG definition.</p>
+    <div class="callout">
+        <div class="callout-label">A heuristic that became canonical</div>
+        <p>LambdaRank's gradient is not the gradient of any obvious loss function. Burges et al. introduced it as a heuristic: <em>if</em> we could differentiate NDCG, this is roughly what the gradient would look like. Later work (Donmez, Svore &amp; Burges 2009; Wang et al. 2018) proved that LambdaRank gradients are in fact gradients of an underlying smooth surrogate for NDCG &mdash; the heuristic was a real algorithm in disguise. The practical result is the same: state-of-the-art on LETOR and TREC benchmarks for over a decade.</p>
+    </div>
+    <h3>LambdaMART &mdash; LambdaRank gradients inside a GBDT</h3>
+    <p>LambdaMART (Wu, Burges, Svore &amp; Gao, 2010) takes the same lambdas and uses them as the residuals in gradient-boosted decision trees (MART = Multiple Additive Regression Trees):</p>
+    <ol>
+        <li>Initialise scores <em>s<sup>(0)</sup></em> = 0.</li>
+        <li>For boost round <em>t</em>: compute <em>&lambda;<sub>ij</sub></em> for every pair under the current ranking; aggregate per-document <em>&lambda;<sub>i</sub></em>; fit a regression tree to predict <em>&lambda;<sub>i</sub></em> from feature vector <em>x<sub>i</sub></em>; update <em>s<sup>(t+1)</sup> = s<sup>(t)</sup> + &eta; &middot; tree(x)</em>.</li>
+        <li>Stop when validation NDCG plateaus.</li>
+    </ol>
+    <p>LightGBM and XGBoost both ship a <code>lambdarank</code> objective that implements exactly this. For production rerankers operating over <em>handcrafted features</em> (BM25 score, dense cosine, click-through rate, freshness, recency &hellip;), LambdaMART remains the algorithm to beat. For end-to-end neural rerankers, the LambdaRank gradient idea is implemented inside SBERT-style training loops as <code>MarginRankingLoss</code> or with explicit listwise reweighting.</p>
+</section>
+
+<section class="slide" id="slide-07">
+    <div class="slide-number">07</div>
+    <h2>InfoNCE &mdash; Training the First-Stage Bi-Encoder</h2>
+    <p>The bi-encoder that feeds stage 1 is also a ranker; it just has to be cheap. Modern dense retrievers (DPR, E5, BGE, GTE, Voyage) are trained with a contrastive loss called <strong>InfoNCE</strong> &mdash; a listwise softmax over one positive and many negatives.</p>
+    <h3>The loss</h3>
+    <p>For a batch of queries with positive documents and negatives, define the similarity</p>
+    <span class="math">s(q, d) = &lang; f<sub>&theta;</sub>(q), g<sub>&phi;</sub>(d) &rang; / &tau;<span class="dim">    &tau; = temperature, often shared with &phi;</span></span>
+    <p>The InfoNCE loss for a triple <em>(q, d<sup>+</sup>, {d<sup>&minus;</sup><sub>k</sub>})</em> is:</p>
+    <span class="math">L = &minus; log &nbsp; <span class="acc">e<sup>s(q, d<sup>+</sup>)</sup></span> / ( e<sup>s(q, d<sup>+</sup>)</sup> + &Sigma;<sub>k</sub> e<sup>s(q, d<sup>&minus;</sup><sub>k</sub>)</sup> )</span>
+    <p>This is exactly cross-entropy with the positive as the &ldquo;correct class&rdquo;: maximise the softmax probability that the model assigns to the positive document among <em>(d<sup>+</sup>, d<sup>&minus;</sup><sub>1</sub>, &hellip;, d<sup>&minus;</sup><sub>N</sub>)</em>.</p>
+    <h3>Where the negatives come from</h3>
+    <ul>
+        <li><strong>In-batch negatives.</strong> For every query in a batch, the other queries' positives serve as &ldquo;easy&rdquo; negatives. Free signal; bigger batch &rArr; more contrast &rArr; better embeddings. This is why dense-retrieval training runs at the largest batch size that fits on the hardware.</li>
+        <li><strong>Hard negatives.</strong> Documents that look superficially relevant but aren't. Mined by running a current bi-encoder over the corpus and taking high-scoring non-relevants. Repeating this every few epochs (&ldquo;iterative hard-negative mining&rdquo;) is the central trick behind BGE, GTE, and E5.</li>
+        <li><strong>Curated hard negatives.</strong> For Q&amp;A datasets (MS MARCO, NQ), &ldquo;BM25 negatives&rdquo; (top-100 BM25 non-positives) are a standard, model-independent source.</li>
+    </ul>
+    <div class="callout">
+        <div class="callout-label">Why temperature matters</div>
+        <p>The temperature <em>&tau;</em> sharpens or softens the softmax. Small <em>&tau;</em> (e.g. 0.05) makes the loss focus aggressively on the hardest negative; large <em>&tau;</em> (e.g. 1) gives every negative similar weight. Tuning <em>&tau;</em> is one of the highest-leverage hyperparameters in contrastive retrieval &mdash; the trade-off is between learning sharp discriminative features (small <em>&tau;</em>) and stable training (larger <em>&tau;</em>).</p>
+    </div>
+    <h3>Connection to pairwise RankNet</h3>
+    <p>The InfoNCE softmax over <em>(d<sup>+</sup>, d<sup>&minus;</sup><sub>1</sub>, &hellip;, d<sup>&minus;</sup><sub>N</sub>)</em> can be rewritten as a sum of pairwise terms involving <em>s(q,d<sup>+</sup>) &minus; s(q,d<sup>&minus;</sup><sub>k</sub>)</em> &mdash; structurally the RankNet loss with one positive per group and N negatives. InfoNCE is, modulo normalisation, the listwise version of RankNet over a hand-picked candidate slate.</p>
+</section>
+
+<section class="slide" id="slide-08">
+    <div class="slide-number">08</div>
+    <h2>MarginMSE &mdash; Distilling a Cross-Encoder into a Bi-Encoder</h2>
+    <p>Cross-encoders are the gold standard for relevance but cannot run on the whole corpus. Bi-encoders can run on the whole corpus but are less accurate. Can the bi-encoder <em>learn</em> from the cross-encoder?</p>
+    <p>Yes. The trick is <strong>knowledge distillation</strong> with a loss tailored for rankers: <strong>MarginMSE</strong> (Hofst&auml;tter, Althammer, Schr&ouml;der, Sertkan &amp; Hanbury, arXiv 2010.02666, 2020).</p>
+    <h3>The loss</h3>
+    <p>Let <em>s<sub>T</sub></em> be the teacher (cross-encoder) score and <em>s<sub>S</sub></em> the student (bi-encoder) score. For a triple <em>(q, d<sup>+</sup>, d<sup>&minus;</sup>)</em>:</p>
+    <span class="math">M<sub>T</sub> = s<sub>T</sub>(q, d<sup>+</sup>) &minus; s<sub>T</sub>(q, d<sup>&minus;</sup>)<span class="dim">    teacher margin</span></span>
+    <span class="math">M<sub>S</sub> = s<sub>S</sub>(q, d<sup>+</sup>) &minus; s<sub>S</sub>(q, d<sup>&minus;</sup>)<span class="dim">    student margin</span></span>
+    <span class="math">L<sub>MarginMSE</sub> = ( M<sub>S</sub> &minus; M<sub>T</sub> )<sup>2</sup></span>
+    <h3>Why the <em>margin</em>, not the score</h3>
+    <p>Distilling the absolute scores would force the bi-encoder to match the cross-encoder's score magnitudes &mdash; impossible, because the two architectures have different output distributions. The <em>margin</em> &mdash; the gap between positive and negative &mdash; <strong>is</strong> the rank-determining quantity. Teaching the student to reproduce the teacher's margins teaches it to reproduce the teacher's rankings without forcing it to reproduce the teacher's score scale.</p>
+    <div class="callout">
+        <div class="callout-label">Why this works so well</div>
+        <p>A cross-encoder trained on millions of (q, d<sup>+</sup>, d<sup>&minus;</sup>) triples has implicitly learned the relevance manifold. Its margin <em>M<sub>T</sub></em> on a fresh triple is a much richer label than the binary &ldquo;positive vs negative&rdquo; tag &mdash; it encodes the <em>degree</em> of relevance difference. Training the student on margins is closer to regression on a continuous teacher signal than to binary classification. Empirically: distilled bi-encoders match cross-encoder NDCG@10 to within 1&ndash;3 points on most benchmarks, at bi-encoder cost.</p>
+    </div>
+    <h3>Practical recipe</h3>
+    <ol>
+        <li>Train (or pick) a strong cross-encoder teacher on MS MARCO + your domain data.</li>
+        <li>For each (q, d<sup>+</sup>, d<sup>&minus;</sup>) triple in the training corpus, run the teacher and cache <em>M<sub>T</sub></em>.</li>
+        <li>Train the bi-encoder with <code>L<sub>MarginMSE</sub></code>, often combined with InfoNCE so the bi-encoder also gets contrastive signal: <strong>L = &alpha;&middot;L<sub>InfoNCE</sub> + &beta;&middot;L<sub>MarginMSE</sub></strong>.</li>
+        <li>The BGE and BGE-M3 model families are trained with this combination; their reranker counterparts serve as the teachers.</li>
+    </ol>
+</section>
+
+<section class="slide" id="slide-09">
+    <div class="slide-number">09</div>
+    <h2>Evaluation &mdash; DCG, NDCG, MRR, MAP</h2>
+    <p>All the loss functions above are surrogates. The metrics that actually decide whether a system shipped are these four. Each is defined per query and averaged over the eval set.</p>
+    <h3>DCG &mdash; Discounted Cumulative Gain</h3>
+    <p>For a ranked list of <em>k</em> documents with graded relevance labels <em>rel<sub>1</sub>, &hellip;, rel<sub>k</sub></em>:</p>
+    <span class="math">DCG@k = &Sigma;<sub>i=1</sub><sup>k</sup> (2<sup>rel<sub>i</sub></sup> &minus; 1) / log<sub>2</sub>(i + 1)<span class="dim">    industry / TREC formula</span></span>
+    <p>Two pieces of intuition:</p>
+    <ul>
+        <li><strong>Gain (numerator).</strong> <em>2<sup>rel<sub>i</sub></sup> &minus; 1</em> is exponential in the label &mdash; a label-3 document is much more valuable than three label-1 documents combined. (J&auml;rvelin &amp; Kek&auml;l&auml;inen's original 2002 formula used <em>rel<sub>i</sub></em> linearly; the exponential form is the modern default.)</li>
+        <li><strong>Discount (denominator).</strong> <em>log<sub>2</sub>(i+1)</em> down-weights positions further down the list. Position 1 has discount log<sub>2</sub>(2) = 1; position 10 has log<sub>2</sub>(11) &asymp; 3.46; position 100 has log<sub>2</sub>(101) &asymp; 6.66. Logarithmic discount captures &ldquo;users look at top results much more than later ones&rdquo; without crashing to zero.</li>
+    </ul>
+    <h3>NDCG &mdash; Normalised DCG</h3>
+    <p>DCG depends on the number of relevant documents and label distribution per query &mdash; raw DCG values are not comparable across queries. Fix: normalise by the DCG of the <em>ideal</em> ranking (relevant docs sorted by label, in order):</p>
+    <span class="math">NDCG@k = DCG@k / IDCG@k <span class="dim">     &isin; [0, 1]</span></span>
+    <p>NDCG@10 is the de facto BEIR-style benchmark metric for retrieval and reranking.</p>
+    <h3>MRR &mdash; Mean Reciprocal Rank</h3>
+    <p>For each query, find the rank of the <em>first</em> relevant document; take its reciprocal; average over queries:</p>
+    <span class="math">MRR = (1/|Q|) &middot; &Sigma;<sub>q</sub> 1 / rank<sub>q</sub>(first relevant)<span class="dim">    0 if none in top-k</span></span>
+    <p>Right metric when there is one canonical answer per query (single-answer Q&amp;A, fact lookup). Tells you nothing about ranking quality beyond the first relevant result.</p>
+    <h3>MAP &mdash; Mean Average Precision</h3>
+    <p>For each query, compute Average Precision (AP):</p>
+    <span class="math">AP@k = (1 / R<sub>q</sub>) &middot; &Sigma;<sub>i=1</sub><sup>k</sup> Precision@i &middot; <span class="dim">[d<sub>i</sub> relevant]</span></span>
+    <p>where <em>R<sub>q</sub></em> is the total number of relevant documents for <em>q</em> and the indicator gates the sum to relevant positions. Then <em>MAP = mean<sub>q</sub> AP<sub>q</sub></em>. MAP uses binary relevance; rewards both finding many relevant docs <em>and</em> ranking them high.</p>
+    <div class="callout">
+        <div class="callout-label">Which metric for which job</div>
+        <p><strong>NDCG@10</strong> &mdash; default for everything; graded relevance, position-aware, comparable across queries. <strong>MRR</strong> &mdash; single-answer pipelines (factoid QA, codesearch, GitHub-issue retrieval). <strong>MAP</strong> &mdash; multi-document retrieval with binary labels; standard on TREC-style ad-hoc retrieval. <strong>Recall@k</strong> &mdash; the right metric for <em>stage 1</em> of the cascade specifically (slide 05 of <a href="https://brendanjameslynskey.github.io/RAG_08_Two_Step_Retrieval_Architecture/">Deck 08</a>).</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-10">
+    <div class="slide-number">10</div>
+    <h2>The Full Training Pipeline</h2>
+    <p>Bringing it all together: the typical end-to-end training stack for a state-of-the-art open-weights retrieval pipeline (BGE, GTE, E5 lineage) uses every component above.</p>
+    <div class="diagram-flow">
+        <div class="diagram-box accent">Pretrain backbone<br><small>(MLM on web crawl)</small></div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box">Weakly-supervised<br>contrastive<br><small>(InfoNCE on Q&amp;A pairs<br>or query-title pairs)</small></div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box accent">Supervised<br>contrastive<br><small>(InfoNCE +<br>hard negatives)</small></div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box">Distill from<br>cross-encoder<br><small>(MarginMSE)</small></div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box accent">Cross-encoder<br>fine-tune<br><small>(RankNet /<br>LambdaRank)</small></div>
+    </div>
+    <p>And what feeds each stage:</p>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Stage</th><th>Loss</th><th>Data shape</th><th>Output</th></tr></thead>
+            <tbody>
+                <tr><td>Pretrain</td><td>MLM</td><td>Plain text</td><td>Backbone weights</td></tr>
+                <tr><td>Weak contrastive</td><td>InfoNCE, large batch in-batch negs</td><td>Query &ndash; passage pairs (e.g. Reddit, Stack Exchange)</td><td>Generic bi-encoder</td></tr>
+                <tr><td>Supervised contrastive</td><td>InfoNCE + mined hard negatives</td><td>MS MARCO / NQ + curated negs</td><td>Strong bi-encoder</td></tr>
+                <tr><td>Distillation</td><td>MarginMSE (+ InfoNCE)</td><td>Same triples, teacher scores</td><td>Distilled bi-encoder</td></tr>
+                <tr><td>Cross-encoder</td><td>RankNet / LambdaRank surrogate</td><td>(q, d<sup>+</sup>, d<sup>&minus;</sup>) triples</td><td>Reranker</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="callout">
+        <div class="callout-label">The circular relationship</div>
+        <p>The reranker (stage 5) becomes the teacher for the next iteration's distillation (stage 4). The improved bi-encoder (stage 4 output) becomes the source of harder hard negatives for the next iteration's contrastive training (stage 3) and for fine-tuning the next reranker (stage 5). This iterative loop is how BGE-v1 became BGE-M3 and how the GTE-Qwen and E5-mistral series scaled their quality without scaling their parameter counts.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-11">
+    <div class="slide-number">11</div>
+    <h2>What to Take Away</h2>
+    <ul>
+        <li><strong>A reranker is just a scoring function <em>s<sub>&theta;</sub>(q, d)</em>.</strong> The two production families &mdash; cross-encoder and ColBERT MaxSim &mdash; differ only in where the query and document tokens interact and how much that interaction costs.</li>
+        <li><strong>MaxSim is a strict relaxation of full cross-attention.</strong> Each query token picks its single best document match, independently. Cheap, parallel, indexable; misses joint multi-token reasoning. Right answer for most reranking at scale.</li>
+        <li><strong>The three LTR families correspond to three views of the data:</strong> pointwise (one pair), pairwise (two docs for a query), listwise (all docs for a query). Pairwise dominates because gradients are easy and hard negatives provide the signal.</li>
+        <li><strong>RankNet&apos;s lambda is the building block.</strong> A signed force on the score; magnitude depends on how wrong the current ranking is. Hard negatives produce big lambdas; correctly-ranked easy negatives produce near-zero gradient.</li>
+        <li><strong>LambdaRank weights lambdas by <em>|&Delta;NDCG|</em>.</strong> Errors near the top hurt the metric more, so push the optimiser harder on them. LambdaMART is the same idea inside GBDT &mdash; still SOTA for tabular-feature reranking.</li>
+        <li><strong>InfoNCE is the listwise softmax over a positive and many negatives</strong> &mdash; how every modern dense bi-encoder is trained. Temperature and hard-negative quality are the two highest-leverage hyperparameters.</li>
+        <li><strong>MarginMSE distillation transfers cross-encoder quality to bi-encoder cost.</strong> Match the <em>margin</em>, not the absolute score &mdash; that is the rank-determining quantity and the only thing the student can plausibly reproduce.</li>
+        <li><strong>NDCG@10 is the universal target.</strong> Position-weighted, exponential-gain, normalised. MRR for single-answer, MAP for binary multi-relevant, Recall@k for stage 1.</li>
+    </ul>
+    <div class="callout">
+        <div class="callout-label">Where to next</div>
+        <p>For the operational side &mdash; latency budgets, model tables, cascade design &mdash; see <a href="https://brendanjameslynskey.github.io/RAG_03_Hybrid_Search_and_Reranking/">RAG 03</a>. For the architectural pillar this deck rests on (indexability, ANN math, the (k, quality, latency) Pareto frontier), see <a href="https://brendanjameslynskey.github.io/RAG_08_Two_Step_Retrieval_Architecture/">RAG 08</a>. For ingestion (chunking, layout-aware parsing, deduplication), <a href="https://brendanjameslynskey.github.io/RAG_04_Chunking_and_Ingestion/">RAG 04</a>.</p>
+    </div>
+</section>
+
+<footer class="footer">
+    <p>Part of the <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_RAG_Retrieval">RAG &amp; Retrieval Systems Series</a></p>
+    <p style="margin-top:0.5rem;font-size:0.8rem;"><a href="https://github.com/BrendanJamesLynskey/LLM_Hub_RAG_Retrieval">Back to Series Index</a></p>
+</footer>
+<script>
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.slide').forEach(slide => {
+        slide.style.opacity = '0';
+        slide.style.transform = 'translateY(30px)';
+        slide.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(slide);
+    });
+</script>
+</body>
+</html>

@@ -9,15 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0a0a0a;
-            --bg-card: #0d1117;
-            --bg-code: #161b22;
-            --text-primary: #e6edf3;
-            --text-secondary: #8b949e;
-            --accent: #76B900;
-            --accent-dim: #76B90044;
-            --accent-glow: #76B90033;
-            --border: #21262d;
+            --bg-primary: #1c1815;
+            --bg-card: #231e1a;
+            --bg-code: #2b2520;
+            --text-primary: #efe8dc;
+            --text-secondary: #a2978b;
+            --accent: #aabd59;
+            --accent-dim: #aabd5944;
+            --accent-glow: #aabd5933;
+            --border: #3a322b;
             --font-display: 'Space Grotesk', sans-serif;
             --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
             --font-body: 'Inter', sans-serif;
@@ -79,30 +79,30 @@
         .slide li strong { color: var(--text-primary); }
         .slide code { font-family: var(--font-mono); font-size: 0.88em;
                       background: var(--bg-code); border: 1px solid var(--border);
-                      padding: 0.05rem 0.35rem; border-radius: 3px; color: #c9d1d9; }
+                      padding: 0.05rem 0.35rem; border-radius: 3px; color: #dad1c5; }
         .math { font-family: var(--font-mono); font-size: 0.95em;
                 background: var(--bg-code); border: 1px solid var(--border);
-                padding: 0.6rem 0.9rem; border-radius: 6px; color: #c9d1d9;
+                padding: 0.6rem 0.9rem; border-radius: 6px; color: #dad1c5;
                 display: block; margin: 0.6rem 0; line-height: 1.7;
                 overflow-x: auto; white-space: nowrap; }
         .math .acc { color: var(--accent); }
         .math .dim { color: var(--text-secondary); }
-        .math .red { color: #ff7b72; }
+        .math .red { color: #de805a; }
         .code-block { background: var(--bg-code); border: 1px solid var(--border);
                       border-radius: 8px; margin: 1.25rem 0; overflow: hidden; }
         .code-header { font-family: var(--font-mono); font-size: 0.75rem;
-                       color: var(--accent); background: rgba(118, 185, 0, 0.08);
+                       color: var(--accent); background: rgba(170,189,89,0.08);
                        padding: 0.4rem 1rem; border-bottom: 1px solid var(--border); }
         .code-block pre { margin: 0; padding: 1rem; overflow-x: auto; }
         .code-block code { font-family: var(--font-mono); font-size: 0.85rem;
-                           line-height: 1.6; color: #c9d1d9;
+                           line-height: 1.6; color: #dad1c5;
                            background: transparent; border: none; padding: 0; }
-        .kw { color: #ff7b72; }
-        .fn { color: #d2a8ff; }
-        .str { color: #a5d6ff; }
-        .cm { color: #8b949e; font-style: italic; }
-        .num { color: #79c0ff; }
-        .type { color: #ffa657; }
+        .kw { color: #de805a; }
+        .fn { color: #d7bbdf; }
+        .str { color: #bcdbd4; }
+        .cm { color: #a2978b; font-style: italic; }
+        .num { color: #97cdc6; }
+        .type { color: #e3b174; }
         .table-wrap { overflow-x: auto; margin: 1.25rem 0;
                       border-radius: 8px; border: 1px solid var(--border); }
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
@@ -113,7 +113,7 @@
         td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border);
              color: var(--text-secondary); vertical-align: top; }
         tr:last-child td { border-bottom: none; }
-        tr:nth-child(even) td { background: rgba(13, 17, 23, 0.5); }
+        tr:nth-child(even) td { background: rgba(35,30,26,0.5); }
         .diagram-flow { display: flex; flex-wrap: wrap; align-items: center;
                         justify-content: center; gap: 0.5rem; margin: 1.5rem 0;
                         padding: 1.5rem; background: var(--bg-card);
@@ -124,7 +124,7 @@
                        color: var(--text-primary); text-align: center;
                        white-space: nowrap; }
         .diagram-box.accent { border-color: var(--accent); color: var(--accent);
-                              background: rgba(118, 185, 0, 0.08); }
+                              background: rgba(170,189,89,0.08); }
         .diagram-arrow { color: var(--accent); font-size: 1.3rem; font-weight: 700; }
         .diagram-grid { display: grid; gap: 0.75rem; margin: 1.5rem 0;
                         padding: 1.5rem; background: var(--bg-card);

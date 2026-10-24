@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html data-concept="catalogue" lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -174,9 +174,65 @@
     /* deck-mobile-fix:hero */ .hero{overflow:hidden}@supports (overflow-x:clip){.hero{overflow:visible;overflow-x:clip}}
     /* deck-mobile-fix:phone */ @media (max-width:640px){.diagram-box,.tier-fill,.section-divider>span,.action-btn{white-space:normal;overflow-wrap:anywhere}.diagram-grid>*,.diagram-panel,.diagram-box,.code-block,.callout,.metric,.control-group,.control-row>*,.pipeline-body,.roll-track>*,.tier-fill,.timeline-row>*{min-width:0;max-width:100%}p,li,a,code,td,th,.callout,.diagram-panel{overflow-wrap:break-word}pre{max-width:100%;overflow-x:auto}table{display:block;max-width:100%;overflow-x:auto}.katex-display,.bits,.canvas-wrap,.influence-map-wrapper,.timeline-track,div:has(>.bank-cell){max-width:100%;overflow-x:auto;overflow-y:hidden}select,input,img,video,iframe,.action-btn{max-width:100%}canvas{max-width:100%;height:auto}}
     </style>
+<style id="deck-concept">@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+html[data-concept=catalogue] .hero{min-height:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);column-gap:3rem;align-items:center;align-content:start;justify-items:start;text-align:left;max-width:1180px;margin:0 auto;padding:3rem 1.75rem 4rem}
+html[data-concept=catalogue] .hero::before,html[data-concept=catalogue] .hero::after{display:none}
+html[data-concept=catalogue] .hero>*{grid-column:1;margin-left:0;margin-right:0}
+html[data-concept=catalogue] .hero .series-label{display:none}
+html[data-concept=catalogue] .hero h1{font-size:clamp(2rem,4.3vw,3.2rem);line-height:1.08;letter-spacing:-.015em;margin-bottom:1rem}
+html[data-concept=catalogue] .hero h1 .accent{color:var(--accent)}
+html[data-concept=catalogue] .hero .subtitle{max-width:none;margin-bottom:1.5rem}
+html[data-concept=catalogue] .hero .tags{justify-content:flex-start;gap:.25rem 1rem;margin-bottom:1.25rem}
+html[data-concept=catalogue] .tag{background:none;border:0;border-radius:0;padding:0;color:var(--text-primary);font-family:'Special Elite',var(--font-mono);font-size:.85rem}
+html[data-concept=catalogue] .hero .tag::before{content:'see also: ';color:var(--text-secondary);font-size:.75rem}
+html[data-concept=catalogue] .hero .tag+.tag::before{content:'· ';}
+html[data-concept=catalogue] .hero .pipeline{justify-content:flex-start;margin-bottom:0}
+html[data-concept=catalogue] .pipeline-step{background:none;border:0;border-radius:0;padding:0;color:var(--text-secondary);font-family:var(--font-mono);font-size:.78rem}
+html[data-concept=catalogue] .cc-fig{grid-column:2;grid-row:1/span 6;width:100%;margin:0}
+html[data-concept=catalogue] .cc-drawer{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(#7a5537,#5e4029);border-radius:3px 3px 0 0;padding:.5rem .9rem;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+html[data-concept=catalogue] .cc-drawer span{font-family:'Special Elite',monospace;font-size:.8rem;color:#f1e6d2;background:#efe8d8;color:#3b2a1c;padding:.05rem .5rem;border:1px solid #b8a27f}
+html[data-concept=catalogue] .cc-drawer b{width:2.2rem;height:.7rem;border-radius:.35rem;background:linear-gradient(#d9c08a,#9c8152);font-size:0;box-shadow:0 1px 0 rgba(0,0,0,.4)}
+html[data-concept=catalogue] .cc-cardwrap{position:relative;background:#f7f2e4;box-shadow:0 10px 24px rgba(0,0,0,.45);transform:rotate(-.8deg) translateY(-6px)}
+html[data-concept=catalogue] .cc-call{position:absolute;top:.45rem;left:.7rem;font-family:'Special Elite',monospace;font-size:.85rem;color:#2c2118}
+html[data-concept=catalogue] .cc-cardtitle{position:absolute;top:.45rem;left:5.5rem;right:.7rem;font-family:'Special Elite',monospace;font-size:.85rem;color:#2c2118;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-concept=catalogue] .cc-fig figcaption{font-size:.88rem;line-height:1.5;color:var(--text-secondary);margin-top:.9rem}
+html[data-concept=catalogue] .concept-art{display:block;width:100%;height:auto;overflow:hidden}
+html[data-concept=catalogue] .concept-art .cc-card{fill:#f7f2e4}
+html[data-concept=catalogue] .concept-art .cc-rule{stroke:#9fbad6;stroke-width:.6}
+html[data-concept=catalogue] .concept-art .cc-red{stroke:#d07a76;stroke-width:1.2}
+html[data-concept=catalogue] .concept-art .cc-punch{fill:#5e4029}
+html[data-concept=catalogue] .concept-art text{font-family:'Special Elite',monospace;fill:#2c2118}
+html[data-concept=catalogue] .concept-art .cc-hand{fill:#1f3f7a}
+html[data-concept=catalogue] .concept-art .cc-ln,html[data-concept=catalogue] .concept-art .cc-ax{stroke:#2c2118;stroke-width:1}
+html[data-concept=catalogue] .concept-art .cc-vec{stroke:#1f3f7a;stroke-width:1.6}
+html[data-concept=catalogue] .concept-art .cc-arrow{stroke:#2c2118;stroke-width:1.2;marker-end:none}
+html[data-concept=catalogue] .concept-art .cc-path{fill:none;stroke:#b8322a;stroke-width:2}
+html[data-concept=catalogue] .concept-art .cc-dot{fill:#2c2118}
+html[data-concept=catalogue] .concept-art .cc-node{fill:#f7f2e4;stroke:#1f3f7a;stroke-width:1.6}
+html[data-concept=catalogue] .concept-art .cc-box{fill:#f7f2e4;stroke:#2c2118;stroke-width:1}
+html[data-concept=catalogue] .concept-art .cc-doc{fill:#e8dfc8;stroke:#2c2118;stroke-width:1}
+html[data-concept=catalogue] .concept-art .cc-chunk{fill:rgba(31,63,122,.1);stroke:#1f3f7a;stroke-width:1}
+html[data-concept=catalogue] .concept-art .cc-heat{fill:#1f3f7a}
+html[data-concept=catalogue] .concept-art .cc-best{fill:none;stroke:#b8322a;stroke-width:2}
+html[data-concept=catalogue] .slide-number{font-family:'Special Elite',monospace;font-size:.85rem;font-weight:400;color:var(--text-secondary);top:4.4rem;right:1.5rem}
+html[data-concept=catalogue] .slide-number::before{content:'card\00a0'}
+html[data-concept=catalogue] .slide h2{color:var(--text-primary);padding-right:4rem}
+html[data-concept=catalogue] .slide h2::after{content:'';display:block;width:4rem;height:2px;margin-top:.55rem;background:#d07a76}
+html[data-concept=catalogue] .callout .callout-label,html[data-concept=catalogue] .metric .metric-label{text-transform:none;letter-spacing:0;font-size:.82rem}
+html[data-concept=catalogue] .callout,html[data-concept=catalogue] .diagram-grid,html[data-concept=catalogue] .canvas-wrap,html[data-concept=catalogue] .control-panel,html[data-concept=catalogue] .diagram-panel,html[data-concept=catalogue] .metric,html[data-concept=catalogue] .btn,html[data-concept=catalogue] .tag{border-radius:2px}
+@media (max-width:820px){
+ html[data-concept=catalogue] .hero{grid-template-columns:minmax(0,1fr);padding:1.5rem 1rem 3rem}
+ html[data-concept=catalogue] .cc-fig{grid-column:1;grid-row:auto;order:10;margin-top:1.75rem}
+}
+</style>
 </head>
 <body>
 <header class="hero">
+<!-- deck-concept:start -->
+<figure class="cc-fig"><div class="cc-drawer" aria-hidden="true"><span>Retrieval</span><b>RAG 09</b></div>
+<div class="cc-cardwrap"><div class="cc-call" aria-hidden="true">RAG 09</div><div class="cc-cardtitle" aria-hidden="true">Reranker Mathematics</div><svg class="concept-art" viewBox="0 0 420 250" role="img" aria-label="A reranker score matrix of queries against documents" xmlns="http://www.w3.org/2000/svg"><rect class="cc-card" width="420" height="250"/><line class="cc-red" x1="0" x2="420" y1="34" y2="34"/><line class="cc-rule" x1="0" x2="420" y1="52" y2="52"/><line class="cc-rule" x1="0" x2="420" y1="70" y2="70"/><line class="cc-rule" x1="0" x2="420" y1="88" y2="88"/><line class="cc-rule" x1="0" x2="420" y1="106" y2="106"/><line class="cc-rule" x1="0" x2="420" y1="124" y2="124"/><line class="cc-rule" x1="0" x2="420" y1="142" y2="142"/><line class="cc-rule" x1="0" x2="420" y1="160" y2="160"/><line class="cc-rule" x1="0" x2="420" y1="178" y2="178"/><line class="cc-rule" x1="0" x2="420" y1="196" y2="196"/><line class="cc-rule" x1="0" x2="420" y1="214" y2="214"/><line class="cc-rule" x1="0" x2="420" y1="232" y2="232"/><circle class="cc-punch" cx="210.0" cy="236" r="6"/><text class="cc-t" x="140" y="56" text-anchor="middle" style="font-size:10px">d1</text><text class="cc-t" x="180" y="56" text-anchor="middle" style="font-size:10px">d2</text><text class="cc-t" x="220" y="56" text-anchor="middle" style="font-size:10px">d3</text><text class="cc-t" x="260" y="56" text-anchor="middle" style="font-size:10px">d4</text><text class="cc-t" x="300" y="56" text-anchor="middle" style="font-size:10px">d5</text><text class="cc-t" x="340" y="56" text-anchor="middle" style="font-size:10px">d6</text><text class="cc-t" x="110" y="84" text-anchor="end" style="font-size:10px">q1</text><rect class="cc-heat" x="122" y="66" width="36" height="34" style="opacity:0.50"/><text class="cc-t" x="140" y="88" text-anchor="middle" style="font-size:9px">0.46</text><rect class="cc-heat" x="162" y="66" width="36" height="34" style="opacity:0.43"/><text class="cc-t" x="180" y="88" text-anchor="middle" style="font-size:9px">0.37</text><rect class="cc-heat" x="202" y="66" width="36" height="34" style="opacity:0.25"/><text class="cc-t" x="220" y="88" text-anchor="middle" style="font-size:9px">0.14</text><rect class="cc-heat" x="242" y="66" width="36" height="34" style="opacity:0.80"/><text class="cc-t" x="260" y="88" text-anchor="middle" style="font-size:9px">0.87</text><rect class="cc-heat" x="282" y="66" width="36" height="34" style="opacity:0.15"/><text class="cc-t" x="300" y="88" text-anchor="middle" style="font-size:9px">0.01</text><rect class="cc-heat" x="322" y="66" width="36" height="34" style="opacity:0.53"/><text class="cc-t" x="340" y="88" text-anchor="middle" style="font-size:9px">0.50</text><rect class="cc-best" x="242" y="66" width="36" height="34"/><text class="cc-t" x="110" y="124" text-anchor="end" style="font-size:10px">q2</text><rect class="cc-heat" x="122" y="106" width="36" height="34" style="opacity:0.82"/><text class="cc-t" x="140" y="128" text-anchor="middle" style="font-size:9px">0.90</text><rect class="cc-heat" x="162" y="106" width="36" height="34" style="opacity:0.21"/><text class="cc-t" x="180" y="128" text-anchor="middle" style="font-size:9px">0.08</text><rect class="cc-heat" x="202" y="106" width="36" height="34" style="opacity:0.57"/><text class="cc-t" x="220" y="128" text-anchor="middle" style="font-size:9px">0.55</text><rect class="cc-heat" x="242" y="106" width="36" height="34" style="opacity:0.61"/><text class="cc-t" x="260" y="128" text-anchor="middle" style="font-size:9px">0.62</text><rect class="cc-heat" x="282" y="106" width="36" height="34" style="opacity:0.18"/><text class="cc-t" x="300" y="128" text-anchor="middle" style="font-size:9px">0.04</text><rect class="cc-heat" x="322" y="106" width="36" height="34" style="opacity:0.43"/><text class="cc-t" x="340" y="128" text-anchor="middle" style="font-size:9px">0.38</text><rect class="cc-best" x="122" y="106" width="36" height="34"/><text class="cc-t" x="110" y="164" text-anchor="end" style="font-size:10px">q3</text><rect class="cc-heat" x="122" y="146" width="36" height="34" style="opacity:0.68"/><text class="cc-t" x="140" y="168" text-anchor="middle" style="font-size:9px">0.70</text><rect class="cc-heat" x="162" y="146" width="36" height="34" style="opacity:0.49"/><text class="cc-t" x="180" y="168" text-anchor="middle" style="font-size:9px">0.45</text><rect class="cc-heat" x="202" y="146" width="36" height="34" style="opacity:0.69"/><text class="cc-t" x="220" y="168" text-anchor="middle" style="font-size:9px">0.73</text><rect class="cc-heat" x="242" y="146" width="36" height="34" style="opacity:0.27"/><text class="cc-t" x="260" y="168" text-anchor="middle" style="font-size:9px">0.16</text><rect class="cc-heat" x="282" y="146" width="36" height="34" style="opacity:0.33"/><text class="cc-t" x="300" y="168" text-anchor="middle" style="font-size:9px">0.24</text><rect class="cc-heat" x="322" y="146" width="36" height="34" style="opacity:0.23"/><text class="cc-t" x="340" y="168" text-anchor="middle" style="font-size:9px">0.11</text><rect class="cc-best" x="202" y="146" width="36" height="34"/><text class="cc-hand" x="30" y="210" text-anchor="start" style="font-size:11px">score(q, d) = σ(cross-encoder([q; d]))</text></svg></div>
+<figcaption>A reranker reads query and document together and scores each pair; the best per row is circled.</figcaption></figure>
+<!-- deck-concept:end -->
     <div class="series-label">RAG &amp; Retrieval Systems Series &mdash; Presentation 09</div>
     <h1>Reranker <span class="accent">Mathematics</span></h1>
     <p class="subtitle">Inside stage 2. Cross-encoder attention, ColBERT MaxSim, the learning-to-rank loss family (pointwise, RankNet, LambdaRank / LambdaMART), InfoNCE for first-stage training, MarginMSE distillation, and the formal derivations of DCG / NDCG / MRR / MAP.</p>
